@@ -8,26 +8,24 @@ import requests
 import time
 import urllib.parse
 
-# client -> service <- worker
+pipeline_id = os.environ['PIPELINE_ID'] # e.g., 'bert'
 
-# e.g., http://localhost:7860
-local_url = os.environ['URL']
-
-# cirrascale_url='http://localhost:8080'
-cirrascale_url='https://inf.san01.cirrascale.net'
+# cirrascale_service_url='http://localhost:8080'
+cirrascale_service_url='https://inf.san01.cirrascale.net'
 cirrascale_service_headers = {'Authorization': os.environ['WORKER_APIKEY']}
+
+to_url = os.environ['TO_URL'] # e.g., http://localhost:7860
 
 while 1:
     try:
         work = {}
         work['start_at'] = datetime.datetime.now()
-        work['consume_response'] = requests.post('{}/receive-request'.format(cirrascale_url), headers=cirrascale_service_headers)
+        work['consume_response'] = requests.post('{}/receive-request'.format(cirrascale_service_url), headers=cirrascale_service_headers)
         work['consume_response'].raise_for_status()
         if work['consume_response'].status_code == 200:
-            work['context'] = work['consume_response'].json()
+            context = work['context'] = work['consume_response'].json()
 
             # STEP 1 consume request from cirrascale service
-            context = work['context']
             request_id = context['request_id']
             request_url = urllib.parse.urlparse(context['request_url'])
             request_content_type = context['request_content_type']
@@ -40,7 +38,7 @@ while 1:
             # TODO use urlib to build url here
             # TODO use urlib to build url here
             # TODO use urlib to build url here
-            url = '{}{}'.format(local_url, request_url.path) # e.g., http://localhost:7860/api/predict
+            url = '{}{}'.format(to_url, request_url.path) # e.g., http://localhost:7860/api/predict
             # TODO use urlib to build url here
             # TODO use urlib to build url here
             # TODO use urlib to build url here
@@ -57,7 +55,7 @@ while 1:
             # STEP 3 produce response to cirrascale service
             context['response_content_type'] = work['local_response'].headers['Content-Type']
             context['response_payload_base64'] = base64.b64encode(work['local_response'].content).decode()
-            work['produce_response'] = requests.post('{}/send-response'.format(cirrascale_url), headers=cirrascale_service_headers, json=context)
+            work['produce_response'] = requests.post('{}/send-response'.format(cirrascale_service_url), headers=cirrascale_service_headers, json=context)
             work['produce_response'].raise_for_status()
 
     except Exception as e:
