@@ -11,9 +11,9 @@ from urllib.parse import urlparse, parse_qs
 
 # client -> service <- worker
 
-# cirrascale service headers
 # base_url='http://localhost:8080'
 base_url='https://inf.san01.cirrascale.net'
+# cirrascale service headers
 service_headers = {'Authorization': os.environ['WORKER_APIKEY']}
 
 while 1:
