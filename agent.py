@@ -10,8 +10,8 @@ import urllib.parse
 
 pipeline_id = os.environ['PIPELINE_ID'] # e.g., 'bert'
 
-# cirrascale_service_url='http://localhost:8080'
-cirrascale_service_url='https://inf.san01.cirrascale.net'
+cirrascale_service_url='http://localhost:8080'
+# cirrascale_service_url='https://inf.san01.cirrascale.net'
 cirrascale_service_headers = {'Authorization': os.environ['WORKER_APIKEY']}
 
 to_url = os.environ['TO_URL'] # e.g., http://localhost:7860
@@ -20,10 +20,10 @@ while 1:
     try:
         work = {}
         work['start_at'] = datetime.datetime.now()
-        work['consume_response'] = requests.post('{}/receive-request'.format(cirrascale_service_url), headers=cirrascale_service_headers)
-        work['consume_response'].raise_for_status()
-        if work['consume_response'].status_code == 200:
-            context = work['context'] = work['consume_response'].json()
+        consume_response = work['consume_response'] = requests.post('{}/receive-request'.format(cirrascale_service_url), headers=cirrascale_service_headers)
+        consume_response.raise_for_status()
+        if consume_response.status_code == 200:
+            context = work['context'] = consume_response.json()
 
             # STEP 1 consume request from cirrascale service
             request_id = context['request_id']
@@ -34,29 +34,21 @@ while 1:
             # STEP 2 local request/response, e.g., local gradio web api
             local_request_headers = {'Content-Type': request_content_type}
             local_request_payload = base64.b64decode(request_payload_base64)
-
-            # TODO use urlib to build url here
-            # TODO use urlib to build url here
-            # TODO use urlib to build url here
-            url = '{}{}'.format(to_url, request_url.path) # e.g., http://localhost:7860/api/predict
-            # TODO use urlib to build url here
-            # TODO use urlib to build url here
-            # TODO use urlib to build url here
-            work['local_response'] = requests.post(url, headers=local_request_headers, data=local_request_payload)
-
-            # TODO tunnel local response errors back to client??
-            # TODO tunnel local response errors back to client??
-            # TODO tunnel local response errors back to client??
-            work['local_response'].raise_for_status()
-            # TODO tunnel local response errors back to client??
-            # TODO tunnel local response errors back to client??
-            # TODO tunnel local response errors back to client??
+            # TODO use urllib to build url here
+            # TODO use urllib to build url here
+            # TODO use urllib to build url here
+            local_url = '{}{}'.format(to_url, request_url.path) # e.g., http://localhost:7860/api/predict
+            # TODO use urllib to build url here
+            # TODO use urllib to build url here
+            # TODO use urllib to build url here
+            local_response = work['local_response'] = requests.post(local_url, headers=local_request_headers, data=local_request_payload)
 
             # STEP 3 produce response to cirrascale service
-            context['response_content_type'] = work['local_response'].headers['Content-Type']
-            context['response_payload_base64'] = base64.b64encode(work['local_response'].content).decode()
-            work['produce_response'] = requests.post('{}/send-response'.format(cirrascale_service_url), headers=cirrascale_service_headers, json=context)
-            work['produce_response'].raise_for_status()
+            context['response_code'] = local_response.status_code
+            context['response_content_type'] = local_response.headers['Content-Type']
+            context['response_payload_base64'] = base64.b64encode(local_response.content).decode()
+            produce_response = work['produce_response'] = requests.post('{}/send-response'.format(cirrascale_service_url), headers=cirrascale_service_headers, json=context)
+            produce_response.raise_for_status()
 
     except Exception as e:
         work['e'] = e
