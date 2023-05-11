@@ -8,19 +8,15 @@ import requests
 import time
 import urllib.parse
 
-pipeline_id = os.environ['PIPELINE_ID'] # e.g., 'bert'
-
-cirrascale_service_url='http://localhost:8080'
-# cirrascale_service_url='https://inf.san01.cirrascale.net'
-cirrascale_service_headers = {'Authorization': os.environ['WORKER_APIKEY']}
-
-to_url = os.environ['TO_URL'] # e.g., http://localhost:7860
+from_url = os.environ['FROM'] # e.g., 'https://bert.inf.san01.cirrascale.net'
+to_url = os.environ['TO'] # e.g., http://localhost:7860
+cirrascale_headers = {'Authorization': os.environ['WORKER_APIKEY']}
 
 while 1:
     try:
         work = {}
         work['start_at'] = datetime.datetime.now()
-        consume_response = work['consume_response'] = requests.post('{}/receive-request'.format(cirrascale_service_url), headers=cirrascale_service_headers)
+        consume_response = work['consume_response'] = requests.post('{}/receive-request'.format(from_url), headers=cirrascale_headers)
         consume_response.raise_for_status()
         if consume_response.status_code == 200:
             context = work['context'] = consume_response.json()
@@ -47,7 +43,7 @@ while 1:
             context['response_code'] = local_response.status_code
             context['response_content_type'] = local_response.headers['Content-Type']
             context['response_payload_base64'] = base64.b64encode(local_response.content).decode()
-            produce_response = work['produce_response'] = requests.post('{}/send-response'.format(cirrascale_service_url), headers=cirrascale_service_headers, json=context)
+            produce_response = work['produce_response'] = requests.post('{}/send-response'.format(from_url), headers=cirrascale_headers, json=context)
             produce_response.raise_for_status()
 
     except Exception as e:
