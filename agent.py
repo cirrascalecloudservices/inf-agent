@@ -36,16 +36,23 @@ while 1:
             # STEP 2 local request/response, e.g., local gradio web api
             local_request_headers = {'Content-Type': request_content_type}
             local_request_payload = base64.b64decode(request_payload_base64)
-            url = '{}/{}'.format(local_url, request_url.path) # e.g., http://localhost:7860/api/predict
+
+            # TODO use urlib to build url here
+            # TODO use urlib to build url here
+            # TODO use urlib to build url here
+            url = '{}{}'.format(local_url, request_url.path) # e.g., http://localhost:7860/api/predict
+            # TODO use urlib to build url here
+            # TODO use urlib to build url here
+            # TODO use urlib to build url here
             work['local_response'] = requests.post(url, headers=local_request_headers, data=local_request_payload)
 
-            # TODO tunnel response errors back to client??
-            # TODO tunnel response errors back to client??
-            # TODO tunnel response errors back to client??
+            # TODO tunnel local response errors back to client??
+            # TODO tunnel local response errors back to client??
+            # TODO tunnel local response errors back to client??
             work['local_response'].raise_for_status()
-            # TODO tunnel response errors back to client??
-            # TODO tunnel response errors back to client??
-            # TODO tunnel response errors back to client??
+            # TODO tunnel local response errors back to client??
+            # TODO tunnel local response errors back to client??
+            # TODO tunnel local response errors back to client??
 
             # STEP 3 produce response to cirrascale service
             context['response_content_type'] = work['local_response'].headers['Content-Type']
