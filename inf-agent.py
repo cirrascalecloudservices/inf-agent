@@ -49,6 +49,7 @@ while 1:
     except Exception as e:
         work['e'] = e
         time.sleep(2)
+    
     finally:
         work['closed_at'] = datetime.datetime.now()
-        print (json.dumps(work, indent=1, default=str))
+        print (json.dumps(work, indent=1, default=str), flush=True)
