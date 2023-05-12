@@ -1,0 +1,9 @@
+[Unit]
+
+[Service]
+
+EnvironmentFile=-/etc/default/cirrascale-inf-agent
+ExecStart=/usr/bin/python3 /usr/local/bin/inf-agent.py
+
+[Install]
+WantedBy=multi-user.target
