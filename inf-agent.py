@@ -54,5 +54,5 @@ while 1:
     finally:
         work['closed_at'] = datetime.datetime.now()
         print(json.dumps(work, indent=1, default=str), flush=True) # flush=True for systemd journalctl
-        if work['e']:
+        if 'e' in work:
             time.sleep(5)
