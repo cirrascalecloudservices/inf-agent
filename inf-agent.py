@@ -8,7 +8,7 @@ import requests
 import time
 import urllib.parse
 
-from_url = os.environ['FROM'] # e.g., 'https://bert.inf.san01.cirrascale.net'
+from_url = urllib.parse.urlparse(os.environ['FROM']) # e.g., 'https://bert.inf.san01.cirrascale.net'
 to_url = os.environ['TO'] # e.g., http://localhost:7860
 cirrascale_headers = {'Authorization': os.environ['WORKER_APIKEY']}
 
@@ -16,7 +16,8 @@ while 1:
     try:
         work = {}
         work['start_at'] = datetime.datetime.now()
-        consume_response = work['consume_response'] = requests.post('{}/receive-request'.format(from_url), headers=cirrascale_headers)
+        receive_url = urllib.parse.urlunparse(from_url._replace(path='receive-request'))
+        consume_response = work['consume_response'] = requests.post(receive_url, headers=cirrascale_headers)
         consume_response.raise_for_status()
         if consume_response.status_code == 200:
             context = work['context'] = consume_response.json()
@@ -43,7 +44,8 @@ while 1:
             context['response_code'] = local_response.status_code
             context['response_content_type'] = local_response.headers['Content-Type']
             context['response_payload_base64'] = base64.b64encode(local_response.content).decode()
-            produce_response = work['produce_response'] = requests.post('{}/send-response'.format(from_url), headers=cirrascale_headers, json=context)
+            send_url = urllib.parse.urlunparse(from_url._replace(path='send-response'))
+            produce_response = work['produce_response'] = requests.post(send_url, headers=cirrascale_headers, json=context)
             produce_response.raise_for_status()
 
     except Exception as e:
